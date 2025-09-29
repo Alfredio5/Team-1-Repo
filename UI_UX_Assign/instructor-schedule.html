@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VCU Course Registration - Instructor Schedule</title>
+  <style>
+    body, h1, h2, p, ul, li, a, table, th, td, form, label, input, select, button { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Arial, sans-serif; background:#f4f4f4; color:#333; line-height:1.6; display:flex; flex-direction:column; min-height:100vh; }
+    header { background:#f1e130; color:#fff; padding:20px; text-align:center; }
+    .container { flex:1; display:flex; }
+    nav { width:220px; background:#978a35; padding:20px 10px; }
+    nav ul { list-style:none; }
+    nav li { margin:15px 0; }
+    nav a { color:#fff; text-decoration:none; font-weight:bold; display:block; padding:8px; border-radius:5px; transition:background .3s; }
+    nav a:hover { background:#b0b315d6; }
+    main { flex:1; padding:40px; }
+    table { width:100%; border-collapse:collapse; background:#fff; margin-top:20px; }
+    th, td { border:1px solid #ccc; padding:10px; text-align:left; }
+    th { background:#f1e130; color:#333; }
+    label { margin-right:10px; font-weight:bold; }
+    input, select, button { margin:5px 20px 15px 0; padding:6px; }
+    button { background:#6f7639; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+    button:hover { background:#4d5327; }
+    footer { background:#6f7639; color:#fff; text-align:center; font-size:.8rem; padding:5px; }
+  </style>
+</head>
+<body>
+  <header><h1>VCU Online Course Registration System</h1></header>
+
+  <div class="container">
+    <nav>
+      <ul>
+        <li><a href="homescreen.html">Home</a></li>
+        <li><a href="course-search.html">Course Search</a></li>
+        <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
+        <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
+        <li><a href="session-enrollment.html">Session Enrollment</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <h2>Instructor Schedule</h2>
+      <form onsubmit="event.preventDefault(); showSchedule();">
+        <label for="instructorName">Instructor:</label>
+        <input type="text" id="instructorName" required />
+        <button type="submit">View Schedule</button>
+      </form>
+
+      <table id="scheduleTable">
+        <thead>
+          <tr>
+            <th>Course #</th><th>Department</th><th>Credits</th><th>Modality</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </main>
+  </div>
+
+  <footer><p>&copy; 2025 Course Registration System</p></footer>
+
+  <script src="courses.js"></script>
+  <script>
+    function showSchedule() {
+      const name = document.getElementById("instructorName").value.toLowerCase();
+      const results = courses.filter(c => c.instructor.toLowerCase().includes(name));
+      const tbody = document.getElementById("scheduleTable").querySelector("tbody");
+      tbody.innerHTML = "";
+      results.forEach(c => {
+        tbody.innerHTML += `<tr>
+          <td>${c.number}</td><td>${c.department}</td><td>${c.credits}</td><td>${c.modality}</td>
+        </tr>`;
+      });
+    }
+  </script>
+</body>
+</html>

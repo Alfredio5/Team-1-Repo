@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VCU Course Registration - Student Registration</title>
+  <style>
+    body, h1, h2, p, ul, li, a, table, th, td, form, label, input, select, button { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Arial, sans-serif; background:#f4f4f4; color:#333; line-height:1.6; display:flex; flex-direction:column; min-height:100vh; }
+    header { background:#f1e130; color:#fff; padding:20px; text-align:center; }
+    .container { flex:1; display:flex; }
+    nav { width:220px; background:#978a35; padding:20px 10px; }
+    nav ul { list-style:none; }
+    nav li { margin:15px 0; }
+    nav a { color:#fff; text-decoration:none; font-weight:bold; display:block; padding:8px; border-radius:5px; transition:background .3s; }
+    nav a:hover { background:#b0b315d6; }
+    main { flex:1; padding:40px; }
+    table { width:100%; border-collapse:collapse; background:#fff; margin-top:20px; }
+    th, td { border:1px solid #ccc; padding:10px; text-align:left; }
+    th { background:#f1e130; color:#333; }
+    label { margin-right:10px; font-weight:bold; }
+    input, select, button { margin:5px 20px 15px 0; padding:6px; }
+    button { background:#6f7639; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+    button:hover { background:#4d5327; }
+    footer { background:#6f7639; color:#fff; text-align:center; font-size:.8rem; padding:5px; }
+  </style>
+</head>
+<body>
+  <header><h1>VCU Online Course Registration System</h1></header>
+
+  <div class="container">
+    <nav>
+      <ul>
+        <li><a href="homescreen.html">Home</a></li>
+        <li><a href="course-search.html">Course Search</a></li>
+        <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
+        <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
+        <li><a href="session-enrollment.html">Session Enrollment</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <h2>Student Registration</h2>
+
+      <!-- Login -->
+      <form id="loginForm">
+        <label for="username">Username:</label><input type="text" id="username" required />
+        <label for="password">Password:</label><input type="password" id="password" required />
+        <button type="button" onclick="login()">Login</button>
+      </form>
+
+      <!-- After login -->
+      <div id="registrationSection" style="display:none;">
+        <h3>Welcome, <span id="studentName"></span></h3>
+
+        <form>
+          <label for="courseSelect">Register for Course:</label>
+          <select id="courseSelect"></select>
+          <button type="button" onclick="registerCourse()">Register</button>
+        </form>
+
+        <h3>Your Enrolled Courses</h3>
+        <table id="enrolledTable">
+          <thead>
+            <tr>
+              <th>Course #</th><th>Department</th><th>Instructor</th><th>Credits</th><th>Modality</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <footer><p>&copy; 2025 Course Registration System</p></footer>
+
+  <script src="courses.js"></script>
+  <script>
+    let student = null;
+    let enrolledCourses = [];
+
+    function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      if (!username || !password) { alert("Enter credentials."); return; }
+
+      student = username;
+      document.getElementById("studentName").innerText = student;
+      document.getElementById("loginForm").style.display = "none";
+      document.getElementById("registrationSection").style.display = "block";
+
+      const select = document.getElementById("courseSelect");
+      select.innerHTML = "";
+      courses.forEach(c => {
+        const option = document.createElement("option");
+        option.value = c.number;
+        option.textContent = `${c.number} - ${c.department} - ${c.instructor}`;
+        select.appendChild(option);
+      });
+    }
+
+    function registerCourse() {
+      const selected = document.getElementById("courseSelect").value;
+      const course = courses.find(c => c.number === selected);
+      if (!course) return;
+
+      if (enrolledCourses.includes(selected)) { alert("Already enrolled!"); return; }
+      if (course.enrolled >= course.max) { alert("Course full!"); return; }
+
+      course.enrolled++;
+      enrolledCourses.push(selected);
+
+      const tbody = document.getElementById("enrolledTable").querySelector("tbody");
+      tbody.innerHTML += `<tr>
+        <td>${course.number}</td><td>${course.department}</td>
+        <td>${course.instructor}</td><td>${course.credits}</td><td>${course.modality}</td>
+      </tr>`;
+    }
+  </script>
+</body>
+</html>
