@@ -113,6 +113,7 @@
       <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
       <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
       <li><a href="session-enrollment.html">Session Enrollment</a></li>
+      <li><a href="advisor-portal.html">Advisor Portal</a></li>
     </ul>
   </nav>
 
@@ -197,7 +198,7 @@
       return;
     }
 
-    addStudent(username, password);
+    students.push({ username, password });
     message.style.color = "green";
     message.textContent = "Account successfully created!";
   }

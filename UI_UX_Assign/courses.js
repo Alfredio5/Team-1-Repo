@@ -17,7 +17,7 @@ const courses = [
 ];
 
 
-// ✅ Utility function to display any list of courses
+// Utility function to display any list of courses
 function displayCourses(courseList) {
   const table = document.getElementById("resultsTable");
   const tbody = table.querySelector("tbody");
@@ -50,7 +50,7 @@ function displayCourses(courseList) {
   });
 }
 
-// 🔍 Search functionality
+// Search functionality
 function searchCourses() {
   const dept = (document.getElementById("department")?.value || "").toLowerCase();
   const instr = (document.getElementById("instructor")?.value || "").toLowerCase();
@@ -65,7 +65,7 @@ function searchCourses() {
   displayCourses(results);
 }
 
-// 🔄 Clear filters & repopulate with full list
+// Clear filters & repopulate with full list
 function clearFilters() {
   document.getElementById("department").value = "";
   document.getElementById("instructor").value = "";
@@ -73,7 +73,7 @@ function clearFilters() {
   displayCourses(courses); // Show full list
 }
 
-// ✅ Automatically load all courses when the page is ready
+// Load all courses when the page is ready
 document.addEventListener("DOMContentLoaded", () => {
   displayCourses(courses);
 });
