@@ -4,218 +4,130 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VCU Course Registration - Instructor Schedule</title>
-  <style>
-    body, h1, h2, p, ul, li, a, table, th, td, form, label, input, select, button {
-      margin:0; padding:0; box-sizing:border-box;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      background:#f4f4f4; color:#333;
-      display:flex; flex-direction:column; min-height:100vh;
-      line-height:1.6;
-    }
-    header {
-      background:#f1e130; color:#fff; padding:20px;
-      text-align:center; position:relative;
-    }
-    #loginBtn {
-      position:absolute; right:20px; top:20px;
-      background:#6f7639; color:#fff; border:none;
-      border-radius:4px; padding:8px 14px;
-      cursor:pointer; font-weight:bold;
-    }
-    #loginBtn:hover { background:#4d5327; }
-
-    /* ✅ White readable logged-in status */
-    #userStatus {
-      position:absolute; right:140px; top:25px;
-      font-size:0.9rem; color:#ffffff; font-weight:bold;
-    }
-
-    .container { flex:1; display:flex; }
-    nav { width:220px; background:#978a35; padding:20px 10px; }
-    nav ul { list-style:none; }
-    nav li { margin:15px 0; }
-    nav a {
-      color:#fff; text-decoration:none; font-weight:bold;
-      display:block; padding:8px; border-radius:5px;
-      transition:background 0.3s;
-    }
-    nav a:hover { background:#b0b315d6; }
-
-    main { flex:1; padding:40px; }
-    label { font-weight:bold; }
-    input, button {
-      margin:5px 20px 15px 0; padding:6px;
-    }
-    button {
-      background:#6f7639; color:#fff; border:none;
-      border-radius:4px; cursor:pointer; font-weight:bold;
-    }
-    button:hover { background:#4d5327; }
-
-    table { width:100%; border-collapse:collapse; background:#fff; margin-top:20px; }
-    th, td { border:1px solid #ccc; padding:10px; text-align:left; }
-    th { background:#f1e130; color:#333; }
-
-    footer {
-      background:#6f7639; color:#fff; text-align:center;
-      padding:5px; font-size:.8rem;
-    }
-
-    /* Login Modal */
-    #loginModal {
-      display:none; position:fixed; top:0; left:0;
-      width:100%; height:100%;
-      background:rgba(0,0,0,0.6);
-      justify-content:center; align-items:center;
-    }
-    #loginModalContent {
-      background:#fff; padding:20px; border-radius:8px;
-      width:300px; text-align:center;
-    }
-    #loginModalContent input {
-      width:90%; padding:8px; margin:10px 0;
-    }
-    #closeModal {
-      background:#ccc; color:#000;
-      border:none; border-radius:4px;
-      padding:8px 14px; cursor:pointer; margin-top:10px;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
-<header>
-  <h1>VCU Online Course Registration System</h1>
-  <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
-  <button id="loginBtn" onclick="handleLoginLogout()">Log In</button>
-</header>
+  <!-- ✅ Unified Header -->
+  <header>
+    <h1>VCU Course Registration System</h1>
+    <div class="header-right">
+      <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
+      <button id="loginBtn" onclick="handleLoginLogout()">Log In</button>
+    </div>
+  </header>
 
-<div class="container">
-  <nav>
-    <ul>
-      <li><a href="homescreen.html">Home</a></li>
-      <li><a href="course-search.html">Course Search</a></li>
-      <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
-      <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
-      <li><a href="session-enrollment.html">Session Enrollment</a></li>
-      <li><a href="advisor-portal.html">Advisor Portal</a></li>
-    </ul>
-  </nav>
+  <div class="container">
+    <!-- ✅ Navigation -->
+    <nav>
+      <ul>
+        <li><a href="homescreen.html">Home</a></li>
+        <li><a href="course-search.html">Course Search</a></li>
+        <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
+        <li><a href="instructor-schedule.html" class="active">Instructor Schedule</a></li>
+        <li><a href="session-enrollment.html">Session Enrollment</a></li>
+        <li><a href="advisor-portal.html">Advisor Portal</a></li>
+      </ul>
+    </nav>
 
-  <main>
-    <h2>Instructor Schedule</h2>
-    <form onsubmit="event.preventDefault(); showSchedule();">
-      <label for="instructorName">Instructor:</label>
-      <input type="text" id="instructorName" required />
-      <button type="submit">View Schedule</button>
-    </form>
+    <!-- ✅ Main Content -->
+    <main>
+      <h2 id="pageTitle">Instructor Schedule</h2>
 
-    <table id="scheduleTable">
-      <thead>
-        <tr>
-          <th>Course #</th>
-          <th>Department</th>
-          <th>Credits</th>
-          <th>Modality</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </main>
-</div>
+      <!-- 🔒 Access Restricted Message -->
+      <div id="accessDenied" style="display:none; color:red; font-weight:bold; text-align:center;">
+        🚫 Access Denied: You must be logged in as an instructor to view this page.
+      </div>
 
-<footer><p>&copy; 2025 Course Registration System</p></footer>
-
-<!-- ✅ Login Modal -->
-<div id="loginModal">
-  <div id="loginModalContent">
-    <h3>Student Login</h3>
-    <input type="text" id="loginUsername" placeholder="Enter Username" />
-    <input type="password" id="loginPassword" placeholder="Enter Password" />
-    <button onclick="login()">Log In</button>
-    <button id="closeModal" onclick="closeLoginModal()">Cancel</button>
-    <div id="loginMessage" style="color:red; margin-top:10px;"></div>
+      <!-- ✅ Only visible if instructor -->
+      <div id="scheduleSection" style="display:none;">
+        <h3>Your Assigned Courses:</h3>
+        <table id="scheduleTable">
+          <thead>
+            <tr>
+              <th>Course #</th>
+              <th>Department</th>
+              <th>Credits</th>
+              <th>Modality</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
   </div>
-</div>
 
-<script src="students.js"></script>
-<script src="courses.js"></script>
-<script>
-  let loggedInStudent = localStorage.getItem("loggedInUser") || null;
+  <footer>
+    <p>&copy; 2025 Course Registration System</p>
+  </footer>
 
-  document.addEventListener("DOMContentLoaded", () => {
-    updateLoginDisplay();
-  });
+  <!-- ✅ Global Login Modal (from auth.js) -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h3>Login</h3>
+      <input type="text" id="loginUsername" placeholder="Enter Username" />
+      <input type="password" id="loginPassword" placeholder="Enter Password" />
+      <button onclick="login()">Log In</button>
+      <button class="secondary-btn" onclick="closeLoginModal()">Cancel</button>
+      <div id="loginMessage" class="modal-message"></div>
+    </div>
+  </div>
 
-  function updateLoginDisplay() {
-    const loginBtn = document.getElementById("loginBtn");
-    const displayName = document.getElementById("loggedInName");
-    if (loggedInStudent) {
-      displayName.textContent = loggedInStudent;
-      loginBtn.textContent = "Log Out";
-    } else {
-      displayName.textContent = "Not Logged In";
-      loginBtn.textContent = "Log In";
-    }
-  }
+  <!-- ✅ JavaScript Files -->
+  <script src="students.js"></script>
+  <script src="courses.js"></script>
+  <script src="auth.js"></script>
 
-  function handleLoginLogout() {
-    if (loggedInStudent) {
-      loggedInStudent = null;
-      localStorage.removeItem("loggedInUser");
+  <script>
+    // Run authentication and access control
+    document.addEventListener("DOMContentLoaded", () => {
       updateLoginDisplay();
-      alert("You have been logged out.");
-    } else {
-      openLoginModal();
-    }
-  }
-
-  function login() {
-    const username = document.getElementById("loginUsername").value.trim();
-    const password = document.getElementById("loginPassword").value.trim();
-    const loginMessage = document.getElementById("loginMessage");
-
-    const user = students.find(s => s.username === username && s.password === password);
-    if (user) {
-      loggedInStudent = user.username;
-      localStorage.setItem("loggedInUser", loggedInStudent);
-      loginMessage.style.color = "green";
-      loginMessage.textContent = "Login successful!";
-      setTimeout(() => {
-        closeLoginModal();
-        updateLoginDisplay();
-        alert("Logged in as " + loggedInStudent);
-      }, 500);
-    } else {
-      loginMessage.textContent = "Invalid username or password.";
-    }
-  }
-
-  function openLoginModal() {
-    document.getElementById("loginModal").style.display = "flex";
-  }
-  function closeLoginModal() {
-    document.getElementById("loginModal").style.display = "none";
-    document.getElementById("loginMessage").textContent = "";
-  }
-
-  function showSchedule() {
-    const name = document.getElementById("instructorName").value.toLowerCase();
-    const results = courses.filter(c => c.instructor.toLowerCase().includes(name));
-    const tbody = document.getElementById("scheduleTable").querySelector("tbody");
-    tbody.innerHTML = "";
-    results.forEach(c => {
-      tbody.innerHTML += `<tr>
-        <td>${c.number}</td>
-        <td>${c.department}</td>
-        <td>${c.credits}</td>
-        <td>${c.modality}</td>
-      </tr>`;
+      enforceInstructorAccess();
     });
-  }
-</script>
+
+    // ✅ Enforce instructor-only access
+    function enforceInstructorAccess() {
+      const user = JSON.parse(localStorage.getItem("loggedInUser")); // full user object
+
+      const denied = document.getElementById("accessDenied");
+      const scheduleSection = document.getElementById("scheduleSection");
+
+      if (!user || user.role !== "instructor") {
+        denied.style.display = "block";
+        scheduleSection.style.display = "none";
+        return;
+      }
+
+      // ✅ Instructor has access
+      denied.style.display = "none";
+      scheduleSection.style.display = "block";
+      loadInstructorSchedule(user.name);
+    }
+
+    // ✅ Load courses assigned to instructor
+    function loadInstructorSchedule(instructorName) {
+      const tbody = document.getElementById("scheduleTable").querySelector("tbody");
+      tbody.innerHTML = "";
+
+      const results = courses.filter(c => c.instructor.toLowerCase() === instructorName.toLowerCase());
+
+      if (results.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; font-weight:bold;">No courses assigned.</td></tr>`;
+        return;
+      }
+
+      results.forEach(c => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${c.number}</td>
+            <td>${c.department}</td>
+            <td>${c.credits}</td>
+            <td>${c.modality}</td>
+          </tr>`;
+      });
+    }
+  </script>
 
 </body>
 </html>

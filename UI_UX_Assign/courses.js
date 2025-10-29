@@ -1,6 +1,8 @@
 // Shared course data
 const courses = [
   { number: "INFO450", department: "INFO", instructor: "Dr. McGarry", credits: 3, prereq: "INFO300", modality: "Hybrid", max: 30, enrolled: 10 },
+  { number: "INFO465", department: "INFO", instructor: "Dr. McGarry", credits: 3, prereq: "INFO300", modality: "Hybrid", max: 30, enrolled: 10 },
+  { number: "INFO420", department: "INFO", instructor: "Dr. McGarry", credits: 3, prereq: "INFO300", modality: "Hybrid", max: 30, enrolled: 10 },
   { number: "SCMA320", department: "SCMA", instructor: "Dr. Johnson", credits: 3, prereq: "MATH200", modality: "In-person", max: 40, enrolled: 25 },
   { number: "MGMT303", department: "MGMT", instructor: "Dr. Ruiz", credits: 3, prereq: "MGMT210", modality: "In-person", max: 40, enrolled: 5 },
   { number: "ACCT204", department: "ACCT", instructor: "Dr. Krumwiedie", credits: 3, prereq: "ACT203", modality: "In-person", max: 40, enrolled: 35 },

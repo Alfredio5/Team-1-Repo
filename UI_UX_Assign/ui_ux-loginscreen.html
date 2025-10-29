@@ -4,235 +4,111 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VCU Course Registration - Student Registration</title>
-  <style>
-    /* Base */
-    body, h1, h2, p, ul, li, a, label, input, button {
-      margin: 0; padding: 0; box-sizing: border-box;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      background:#f4f4f4; color:#333;
-      display:flex; flex-direction:column; min-height:100vh;
-      line-height:1.6;
-    }
-
-    /* Header (flex layout) */
-    header {
-      background: #f1e130;
-      color: #fff;
-      padding: 20px;
-      display: flex;
-      align-items: center;            /* Vertically center */
-      justify-content: center;        /* Center header title */
-      position: relative;
-    }
-
-    .header-right {
-      position: absolute;             /* Allows the right items to float independently */
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);    /* Vertically align with header */
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    #userStatus {
-      font-size: 0.9rem;
-      color: #ffffff;
-      font-weight: bold;
-      white-space: nowrap;           /* prevent wrapping */
-    }
-    #loginBtn {
-      background: #6f7639;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 8px 14px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    #loginBtn:hover { background:#4d5327; }
-
-    /* Layout */
-    .container { flex:1; display:flex; }
-    nav { width:220px; background:#978a35; padding:20px 10px; }
-    nav ul { list-style:none; }
-    nav li { margin:15px 0; }
-    nav a {
-      color:#fff; text-decoration:none; font-weight:bold;
-      display:block; padding:8px; border-radius:5px;
-      transition:background 0.3s;
-    }
-    nav a:hover { background:#b0b315d6; }
-    main { flex:1; padding:40px; }
-
-    /* Form */
-    label { font-weight:bold; display:block; margin-top:10px; }
-    input, button {
-      padding:6px; margin:8px 0 15px 0; width:250px;
-      border:1px solid #ccc; border-radius:4px;
-    }
-    main button {
-      background:#6f7639; color:#fff; cursor:pointer; font-weight:bold;
-    }
-    main button:hover { background:#4d5327; }
-
-    /* Footer */
-    footer { background:#6f7639; color:#fff; text-align:center; padding:5px; font-size:0.8rem; }
-
-    /* Login Modal */
-    #loginModal {
-      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.6);
-      justify-content:center; align-items:center;
-    }
-    #loginModalContent {
-      background:#fff; padding:20px; border-radius:8px; width:300px; text-align:center;
-    }
-    #loginModalContent input { width:90%; padding:8px; margin:10px 0; }
-    #closeModal { background:#ccc; color:#000; padding:8px 14px; border:none; border-radius:4px; cursor:pointer; margin-top:10px; }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<header>
-  <h1>VCU Online Course Registration System</h1>
-  <div class="header-right">
-    <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
-    <button id="loginBtn" onclick="handleLoginLogout()">Log In</button>
+  <!-- ✅ Unified Header -->
+  <header>
+    <h1>VCU Course Registration System</h1>
+    <div class="header-right">
+      <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
+      <button id="loginBtn" onclick="handleLoginLogout()">Log In</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- ✅ Navigation -->
+    <nav>
+      <ul>
+        <li><a href="homescreen.html">Home</a></li>
+        <li><a href="course-search.html">Course Search</a></li>
+        <li><a href="ui_ux-loginscreen.html" class="active">Student Registration</a></li>
+        <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
+        <li><a href="session-enrollment.html">Session Enrollment</a></li>
+        <li><a href="advisor-portal.html">Advisor Portal</a></li>
+      </ul>
+    </nav>
+
+    <!-- ✅ Main Content -->
+    <main>
+      <h2>Create Your Student Account</h2>
+      <form onsubmit="event.preventDefault(); registerStudent();">
+        <label for="newUsername">Create Username:</label>
+        <input type="text" id="newUsername" placeholder="Enter a username" required />
+
+        <label for="newPassword">Create Password:</label>
+        <input type="password" id="newPassword" placeholder="Enter a password" required />
+
+        <button type="submit">Register Account</button>
+      </form>
+
+      <div id="message" style="margin-top:20px; font-weight:bold;"></div>
+    </main>
   </div>
-</header>
 
+  <footer>
+    <p>&copy; 2025 Course Registration System</p>
+  </footer>
 
-<div class="container">
-  <nav>
-    <ul>
-      <li><a href="homescreen.html">Home</a></li>
-      <li><a href="course-search.html">Course Search</a></li>
-      <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
-      <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
-      <li><a href="session-enrollment.html">Session Enrollment</a></li>
-      <li><a href="advisor-portal.html">Advisor Portal</a></li>
-    </ul>
-  </nav>
-
-  <main>
-    <h2>Create Your Student Account</h2>
-
-    <form onsubmit="event.preventDefault(); registerStudent();">
-      <label for="newUsername">Create Username:</label>
-      <input type="text" id="newUsername" required />
-
-      <label for="newPassword">Create Password:</label>
-      <input type="password" id="newPassword" required />
-
-      <button type="submit">Register Account</button>
-    </form>
-
-    <div id="message" style="margin-top:20px; font-weight:bold;"></div>
-  </main>
-</div>
-
-<footer><p>&copy; 2025 Course Registration System</p></footer>
-
-<!-- Login Modal -->
-<div id="loginModal">
-  <div id="loginModalContent">
-    <h3>Student Login</h3>
-    <input type="text" id="loginUsername" placeholder="Enter Username" />
-    <input type="password" id="loginPassword" placeholder="Enter Password" />
-    <button onclick="login()">Log In</button>
-    <button id="closeModal" onclick="closeLoginModal()">Cancel</button>
-    <div id="loginMessage" style="color:red; margin-top:10px;"></div>
+  <!-- ✅ Global Login Modal (from auth.js) -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h3>Student Login</h3>
+      <input type="text" id="loginUsername" placeholder="Enter Username" />
+      <input type="password" id="loginPassword" placeholder="Enter Password" />
+      <button onclick="login()">Log In</button>
+      <button class="secondary-btn" onclick="closeLoginModal()">Cancel</button>
+      <div id="loginMessage" class="modal-message"></div>
+    </div>
   </div>
-</div>
 
-<!-- JavaScript -->
-<script src="students.js"></script>
-<script>
-  let loggedInStudent = localStorage.getItem("loggedInUser") || null;
+  <!-- ✅ JS Files -->
+  <script src="students.js"></script>
+  <script src="auth.js"></script>
 
-  document.addEventListener("DOMContentLoaded", () => {
-    updateLoginDisplay();
-  });
+  <script>
+    // Initialize auth UI
+    document.addEventListener("DOMContentLoaded", () => {
+      initializeAuth();
+    });
 
-  function updateLoginDisplay() {
-    const loginBtn = document.getElementById("loginBtn");
-    const displayName = document.getElementById("loggedInName");
-    if (loggedInStudent) {
-      displayName.textContent = loggedInStudent;
-      loginBtn.textContent = "Log Out";
-    } else {
-      displayName.textContent = "Not Logged In";
-      loginBtn.textContent = "Log In";
+    // ✅ Registration Logic
+    function registerStudent() {
+      const username = document.getElementById("newUsername").value.trim();
+      const password = document.getElementById("newPassword").value.trim();
+      const message = document.getElementById("message");
+
+      if (!username || !password) {
+        message.style.color = "red";
+        message.textContent = "Both fields are required.";
+        return;
+      }
+
+      const exists = students.some(student => student.username === username);
+      if (exists) {
+        message.style.color = "red";
+        message.textContent = "Username already taken. Please choose another.";
+        return;
+      }
+
+      // ✅ Create new student with default structure
+      const newStudent = {
+        id: (students.length + 1).toString().padStart(3, '0'), // Auto-generate ID
+        name: username,
+        username: username,
+        password: password,
+        enrolledCourses: [],
+        blockedCourses: []
+      };
+
+      students.push(newStudent);
+      localStorage.setItem("students", JSON.stringify(students));
+
+      message.style.color = "green";
+      message.textContent = `Account successfully created! Your Student ID is ${newStudent.id}`;
     }
-  }
-
-  function handleLoginLogout() {
-    if (loggedInStudent) {
-      loggedInStudent = null;
-      localStorage.removeItem("loggedInUser");
-      updateLoginDisplay();
-      alert("You have been logged out.");
-    } else {
-      openLoginModal();
-    }
-  }
-
-  function registerStudent() {
-    const username = document.getElementById("newUsername").value.trim();
-    const password = document.getElementById("newPassword").value.trim();
-    const message = document.getElementById("message");
-
-    if (!username || !password) {
-      message.style.color = "red";
-      message.textContent = "Both fields are required.";
-      return;
-    }
-
-    const exists = students.some(student => student.username === username);
-    if (exists) {
-      message.style.color = "red";
-      message.textContent = "Username already taken. Please choose another.";
-      return;
-    }
-
-    students.push({ username, password });
-    message.style.color = "green";
-    message.textContent = "Account successfully created!";
-  }
-
-  function login() {
-    const username = document.getElementById("loginUsername").value.trim();
-    const password = document.getElementById("loginPassword").value.trim();
-    const loginMessage = document.getElementById("loginMessage");
-
-    const user = students.find(s => s.username === username && s.password === password);
-    if (user) {
-      loggedInStudent = user.username;
-      localStorage.setItem("loggedInUser", loggedInStudent);
-
-      loginMessage.style.color = "green";
-      loginMessage.textContent = "Login successful!";
-      setTimeout(() => {
-        closeLoginModal();
-        updateLoginDisplay();
-        alert("Logged in as " + loggedInStudent);
-      }, 500);
-    } else {
-      loginMessage.textContent = "Invalid username or password.";
-    }
-  }
-
-  function openLoginModal() {
-    document.getElementById("loginModal").style.display = "flex";
-  }
-  function closeLoginModal() {
-    document.getElementById("loginModal").style.display = "none";
-    document.getElementById("loginMessage").textContent = "";
-  }
-</script>
+  </script>
 
 </body>
 </html>
