@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VCU Course Registration - Instructor Schedule</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <!-- ✅ Unified Header -->
+  <header>
+    <h1>VCU Course Registration System</h1>
+    <div class="header-right">
+      <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
+      <button id="loginBtn" onclick="handleLoginLogout()">Log In</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- ✅ Navigation -->
+    <nav>
+      <ul>
+        <li><a href="homescreen.html">Home</a></li>
+        <li><a href="course-search.html">Course Search</a></li>
+        <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
+        <li><a href="instructor-schedule.html" class="active">Instructor Schedule</a></li>
+        <li><a href="session-enrollment.html">Session Enrollment</a></li>
+        <li><a href="advisor-portal.html">Advisor Portal</a></li>
+      </ul>
+    </nav>
+
+    <!-- ✅ Main Content -->
+    <main>
+      <h2 id="pageTitle">Instructor Schedule</h2>
+
+      <!-- 🔒 Access Restricted Message -->
+      <div id="accessDenied" style="display:none; color:red; font-weight:bold; text-align:center;">
+        🚫 Access Denied: You must be logged in as an instructor to view this page.
+      </div>
+
+      <!-- ✅ Only visible if instructor -->
+      <div id="scheduleSection" style="display:none;">
+        <h3>Your Assigned Courses:</h3>
+        <table id="scheduleTable">
+          <thead>
+            <tr>
+              <th>Course #</th>
+              <th>Department</th>
+              <th>Credits</th>
+              <th>Modality</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Course Registration System</p>
+  </footer>
+
+  <!-- ✅ Global Login Modal (from auth.js) -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h3>Login</h3>
+      <input type="text" id="loginUsername" placeholder="Enter Username" />
+      <input type="password" id="loginPassword" placeholder="Enter Password" />
+      <button onclick="login()">Log In</button>
+      <button class="secondary-btn" onclick="closeLoginModal()">Cancel</button>
+      <div id="loginMessage" class="modal-message"></div>
+    </div>
+  </div>
+
+  <!-- ✅ JavaScript Files -->
+  <script src="students.js"></script>
+  <script src="courses.js"></script>
+  <script src="auth.js"></script>
+
+  <script>
+    // Run authentication and access control
+    document.addEventListener("DOMContentLoaded", () => {
+      updateLoginDisplay();
+      enforceInstructorAccess();
+    });
+
+    // ✅ Enforce instructor-only access
+    function enforceInstructorAccess() {
+      const user = JSON.parse(localStorage.getItem("loggedInUser")); // full user object
+
+      const denied = document.getElementById("accessDenied");
+      const scheduleSection = document.getElementById("scheduleSection");
+
+      if (!user || user.role !== "instructor") {
+        denied.style.display = "block";
+        scheduleSection.style.display = "none";
+        return;
+      }
+
+      // ✅ Instructor has access
+      denied.style.display = "none";
+      scheduleSection.style.display = "block";
+      loadInstructorSchedule(user.name);
+    }
+
+    // ✅ Load courses assigned to instructor
+    function loadInstructorSchedule(instructorName) {
+      const tbody = document.getElementById("scheduleTable").querySelector("tbody");
+      tbody.innerHTML = "";
+
+      const results = courses.filter(c => c.instructor.toLowerCase() === instructorName.toLowerCase());
+
+      if (results.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; font-weight:bold;">No courses assigned.</td></tr>`;
+        return;
+      }
+
+      results.forEach(c => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${c.number}</td>
+            <td>${c.department}</td>
+            <td>${c.credits}</td>
+            <td>${c.modality}</td>
+          </tr>`;
+      });
+    }
+  </script>
+
+</body>
+</html>
