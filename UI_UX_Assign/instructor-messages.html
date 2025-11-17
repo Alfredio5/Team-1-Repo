@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instructor Messaging – VCU Course Registration</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ✅ Unified Header -->
+  <header>
+    <h1>VCU Course Registration System</h1>
+    <div class="header-right">
+      <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
+      <button id="loginBtn" onclick="handleLoginLogout()">Log In</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- ✅ Navigation -->
+    <nav>
+      <ul>
+        <li><a href="homescreen.html">Home</a></li>
+        <li><a href="course-search.html">Course Search</a></li>
+        <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
+        <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
+        <li><a href="advisor-portal.html">Advisor Portal</a></li>
+        <li><a href="instructor-messages.html" class="active">Instructor Messaging</a></li>
+        <li><a href="student-inbox.html">Student Inbox</a></li>
+        <li><a href="admin-enrollment.html">Admin Dashboard</a></li>
+        <li><a href="student-schedule.html">Student Schedule</a></li>
+      </ul>
+    </nav>
+
+    <!-- ✅ Main Content -->
+    <main>
+      <h2>Instructor Messaging</h2>
+
+      <!-- 🔒 Access Restriction -->
+      <div id="accessDenied" style="display:none; color:red; font-weight:bold;">
+        🚫 Access Denied: Only instructors can use this page.
+      </div>
+
+      <!-- ✅ Messaging Section -->
+      <div id="messageSection" style="display:none;">
+        <p>Select an option below to send messages to your enrolled students.</p>
+
+        <div>
+          <button onclick="loadAllStudents()">📨 Message All Students</button>
+          <button onclick="loadIndividualStudents()">👤 Message Individual Students</button>
+        </div>
+
+        <!-- Message composition -->
+        <div id="studentList" style="margin-top:20px;"></div>
+
+        <div id="composeSection" style="display:none; margin-top:20px;">
+          <label for="messageText">Message Content:</label>
+          <textarea id="messageText" rows="4" style="width:90%;"></textarea><br />
+          <button onclick="sendMessage()">Send Message</button>
+        </div>
+
+        <!-- ✅ Message History -->
+        <h3 style="margin-top:40px;">📬 Message History</h3>
+        <table id="messageHistoryTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Recipients</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 VCU Course Registration System</p>
+  </footer>
+
+  <!-- ✅ Scripts -->
+  <script src="students.js"></script>
+  <script src="courses.js"></script>
+  <script src="auth.js"></script>
+
+  <script>
+    let selectedRecipients = [];
+    let instructorUser = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      updateLoginDisplay();
+      enforceInstructorAccess();
+    });
+
+    // Restrict page access
+    function enforceInstructorAccess() {
+      instructorUser = getLoggedInUser();
+      const denied = document.getElementById("accessDenied");
+      const section = document.getElementById("messageSection");
+
+      if (!instructorUser || instructorUser.role !== "instructor") {
+        denied.style.display = "block";
+        section.style.display = "none";
+        return;
+      }
+
+      denied.style.display = "none";
+      section.style.display = "block";
+      loadMessageHistory();
+    }
+
+    // Load all students across instructor's courses
+    function loadAllStudents() {
+      const listDiv = document.getElementById("studentList");
+      listDiv.innerHTML = "";
+      selectedRecipients = [];
+
+      const taughtCourses = courses
+        .filter(c => c.instructor.toLowerCase() === instructorUser.name.toLowerCase())
+        .map(c => c.number);
+
+      const allStudents = students.filter(s =>
+        s.role === "student" &&
+        s.enrolledCourses.some(course => taughtCourses.includes(course))
+      );
+
+      if (allStudents.length === 0) {
+        listDiv.innerHTML = "<p>No enrolled students found in your courses.</p>";
+        return;
+      }
+
+      selectedRecipients = allStudents.map(s => s.name);
+      listDiv.innerHTML = `<p><strong>Recipients:</strong> All enrolled students (${selectedRecipients.length})</p>`;
+      document.getElementById("composeSection").style.display = "block";
+    }
+
+    // Load selectable list for individual student messaging
+    function loadIndividualStudents() {
+      const listDiv = document.getElementById("studentList");
+      listDiv.innerHTML = "";
+      selectedRecipients = [];
+
+      const taughtCourses = courses
+        .filter(c => c.instructor.toLowerCase() === instructorUser.name.toLowerCase())
+        .map(c => c.number);
+
+      const allStudents = students.filter(s =>
+        s.role === "student" &&
+        s.enrolledCourses.some(course => taughtCourses.includes(course))
+      );
+
+      if (allStudents.length === 0) {
+        listDiv.innerHTML = "<p>No enrolled students found.</p>";
+        return;
+      }
+
+      const checkboxes = allStudents.map(s => `
+        <label style="display:block;">
+          <input type="checkbox" value="${s.name}" /> ${s.name} (${s.id})
+        </label>`).join("");
+
+      listDiv.innerHTML = `
+        <p><strong>Select individual students:</strong></p>
+        ${checkboxes}
+        <button style="margin-top:10px;" onclick="confirmSelected()">Confirm Selection</button>
+      `;
+      document.getElementById("composeSection").style.display = "none";
+    }
+
+    function confirmSelected() {
+      const checks = Array.from(document.querySelectorAll("#studentList input[type='checkbox']:checked"));
+      selectedRecipients = checks.map(c => c.value);
+      if (selectedRecipients.length === 0) {
+        alert("Please select at least one student.");
+        return;
+      }
+      document.getElementById("composeSection").style.display = "block";
+    }
+
+    // Send message (save to localStorage)
+    function sendMessage() {
+      const msg = document.getElementById("messageText").value.trim();
+      if (!msg) {
+        alert("Please enter a message.");
+        return;
+      }
+
+      const timestamp = new Date().toLocaleString();
+      const record = {
+        instructor: instructorUser.name,
+        recipients: selectedRecipients.join(", "),
+        message: msg,
+        date: timestamp
+      };
+
+      const history = JSON.parse(localStorage.getItem("instructorMessages")) || [];
+      history.push(record);
+      localStorage.setItem("instructorMessages", JSON.stringify(history));
+
+      alert("✅ Message sent successfully!");
+      document.getElementById("messageText").value = "";
+      document.getElementById("composeSection").style.display = "none";
+      loadMessageHistory();
+    }
+
+    // Load instructor's past sent messages
+    function loadMessageHistory() {
+      const tbody = document.getElementById("messageHistoryTable").querySelector("tbody");
+      tbody.innerHTML = "";
+
+      const history = JSON.parse(localStorage.getItem("instructorMessages")) || [];
+      const instructorMsgs = history.filter(m => m.instructor === instructorUser.name);
+
+      if (instructorMsgs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No messages sent yet.</td></tr>`;
+        return;
+      }
+
+      instructorMsgs.slice().reverse().forEach(m => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${m.date}</td>
+            <td>${m.recipients}</td>
+            <td>${m.message}</td>
+          </tr>`;
+      });
+    }
+  </script>
+</body>
+</html>

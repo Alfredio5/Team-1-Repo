@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Inbox – VCU Course Registration</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>VCU Course Registration System</h1>
+    <div class="header-right">
+      <div id="userStatus">
+        Logged in as: <span id="loggedInName">Not Logged In</span>
+      </div>
+      <button id="loginBtn" onclick="handleLoginLogout()">Log In</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Navigation -->
+    <nav>
+      <ul>
+        <li><a href="homescreen.html">Home</a></li>
+        <li><a href="course-search.html">Course Search</a></li>
+        <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
+        <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
+        <li><a href="advisor-portal.html">Advisor Portal</a></li>
+        <li><a href="instructor-messages.html">Instructor Messaging</a></li>
+        <li><a href="student-inbox.html" class="active">Student Inbox</a></li>
+        <li><a href="admin-enrollment.html">Admin Dashboard</a></li>
+        <li><a href="student-schedule.html">Student Schedule</a></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+      <h2>Student Inbox</h2>
+
+      <div id="accessDenied" style="display:none; color:red; font-weight:bold;">
+        🚫 Access Denied: Only students can view this page.
+      </div>
+
+      <div id="inboxSection" style="display:none;">
+        <p>Messages sent to you from your instructors will appear here.</p>
+
+        <table id="inboxTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Instructor</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    <p>© 2025 VCU Course Registration System</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="students.js"></script>
+  <script src="courses.js"></script>
+  <script src="auth.js"></script>
+
+  <script>
+    let studentUser = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      updateLoginDisplay();
+      enforceStudentAccess();
+    });
+
+    function enforceStudentAccess() {
+      studentUser = getLoggedInUser();
+      const denied = document.getElementById("accessDenied");
+      const inbox = document.getElementById("inboxSection");
+
+      if (!studentUser || studentUser.role !== "student") {
+        denied.style.display = "block";
+        inbox.style.display = "none";
+        return;
+      }
+
+      denied.style.display = "none";
+      inbox.style.display = "block";
+      loadInbox();
+    }
+
+    function loadInbox() {
+      const tbody = document.querySelector("#inboxTable tbody");
+      tbody.innerHTML = "";
+
+      const messages = JSON.parse(localStorage.getItem("instructorMessages")) || [];
+      if (messages.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No messages yet.</td></tr>`;
+        return;
+      }
+
+      // Filter messages addressed to this student
+      const userName = studentUser.name.toLowerCase();
+      const relevant = messages.filter(msg => 
+        msg.recipients.toLowerCase().includes(userName)
+      );
+
+      if (relevant.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No messages for you.</td></tr>`;
+        return;
+      }
+
+      relevant.slice().reverse().forEach(m => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${m.date}</td>
+            <td>${m.instructor}</td>
+            <td>${m.message}</td>
+          </tr>`;
+      });
+    }
+
+    document.addEventListener("userLoginSuccess", () => {
+      updateLoginDisplay();
+      enforceStudentAccess();
+    });
+  </script>
+</body>
+</html>

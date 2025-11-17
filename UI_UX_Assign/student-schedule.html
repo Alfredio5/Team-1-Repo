@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VCU Course Registration - Student Schedule</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<header>
+  <h1>VCU Course Registration System</h1>
+  <div class="header-right">
+    <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
+    <button id="loginBtn" onclick="handleLoginLogout()">Log Out</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <nav>
+    <ul>
+      <li><a href="homescreen.html">Home</a></li>
+      <li><a href="course-search.html">Course Search</a></li>
+      <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
+      <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
+      <li><a href="advisor-portal.html">Advisor Portal</a></li>
+      <li><a href="instructor-messages.html">Instructor Messaging</a></li>
+      <li><a href="student-inbox.html">Student Inbox</a></li>
+      <li><a href="admin-enrollment.html">Admin Dashboard</a></li>
+      <li><a href="student-schedule.html" class="active">Student Schedule</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>Weekly Schedule Timeline</h2>
+    <p>Your enrolled classes appear in the weekly calendar below.</p>
+
+    <div class="calendar-container">
+      <div class="calendar-header">
+        <div></div>
+        <div>Monday</div>
+        <div>Tuesday</div>
+        <div>Wednesday</div>
+        <div>Thursday</div>
+        <div>Friday</div>
+      </div>
+
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <p>© 2025 Course Registration System</p>
+</footer>
+
+<!-- ===============================
+     COURSE DETAIL MODAL (ONLY ONE!)
+================================-->
+<div id="courseModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalCourseTitle"></h3>
+    <p id="modalCourseInfo"></p>
+    <button onclick="closeModal()" class="secondary-btn">Close</button>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="students.js"></script>
+<script src="courses.js"></script>
+<script src="auth.js"></script>
+<script src="student_schedule.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    updateLoginDisplay();
+  });
+</script>
+
+</body>
+</html>

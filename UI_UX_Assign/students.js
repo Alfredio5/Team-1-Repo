@@ -1,15 +1,16 @@
-// students.js
-// Simulated in-memory "database" for user accounts (students & instructors)
+// =============================================
+// students.js  (FINAL VERSION WITH PERSISTENCE)
+// =============================================
 
-// 🔹 Preloaded mock users (students + instructor)
-const students = [
+// Load students from localStorage OR fallback to defaults
+let students = JSON.parse(localStorage.getItem("studentsData")) || [
   {
     id: "001",
     name: "Jill Valentine",
     username: "jillv",
     password: "pass123",
     role: "student",
-    enrolledCourses: ["BIO101", "CHEM101"],
+    enrolledCourses: [],
     blockedCourses: ["BIO201"]
   },
   {
@@ -18,7 +19,7 @@ const students = [
     username: "chrisr",
     password: "pass123",
     role: "student",
-    enrolledCourses: ["HIST200"],
+    enrolledCourses: [],
     blockedCourses: ["PHYS300"]
   },
   {
@@ -27,7 +28,7 @@ const students = [
     username: "carlos",
     password: "pass123",
     role: "student",
-    enrolledCourses: ["MATH101"],
+    enrolledCourses: [],
     blockedCourses: ["STAT250"]
   },
   {
@@ -36,7 +37,7 @@ const students = [
     username: "adaw",
     password: "pass123",
     role: "student",
-    enrolledCourses: ["CS101", "INFO300"],
+    enrolledCourses: [],
     blockedCourses: ["INFO450"]
   },
   {
@@ -45,7 +46,7 @@ const students = [
     username: "ethanw",
     password: "pass123",
     role: "student",
-    enrolledCourses: ["ENG111"],
+    enrolledCourses: [],
     blockedCourses: ["PHIL230"]
   },
   {
@@ -54,7 +55,7 @@ const students = [
     username: "drayg",
     password: "pass123",
     role: "student",
-    enrolledCourses: ["MGMT210"],
+    enrolledCourses: [],
     blockedCourses: ["FIN305"]
   },
   {
@@ -63,7 +64,7 @@ const students = [
     username: "jbond",
     password: "shaken007",
     role: "student",
-    enrolledCourses: ["SPY101"],
+    enrolledCourses: [],
     blockedCourses: ["ETH300"]
   },
   {
@@ -72,74 +73,47 @@ const students = [
     username: "arthurm",
     password: "wildwest",
     role: "student",
-    enrolledCourses: ["HIST101"],
+    enrolledCourses: [],
     blockedCourses: ["LAW205"]
   },
-
-  // 🔹 Instructor Account (as requested)
   {
     id: "I001",
     name: "Dr. McGarry",
     username: "mcgarrym",
     password: "1234",
     role: "instructor",
-    enrolledCourses: [],     // Instructors don't enroll in courses
-    blockedCourses: []       // Not applicable
+    enrolledCourses: [],
+    blockedCourses: []
   }
 ];
 
-// 🔹 Register new student dynamically when a user creates an account
+// =============================================
+// SAVE STUDENT STATE
+// =============================================
+function persistStudents() {
+  localStorage.setItem("studentsData", JSON.stringify(students));
+}
+
+// =============================================
+// Helper Functions
+// =============================================
+function findUserByUsername(username) {
+  return students.find(u => u.username === username);
+}
+
 function addStudent(username, password) {
-  // Generate a new numeric ID padded to 3 digits
   const newId = String(students.length + 1).padStart(3, "0");
   const newStudent = {
     id: newId,
-    name: username, // You can change this later to accept full name
+    name: username,
     username,
     password,
     role: "student",
     enrolledCourses: [],
     blockedCourses: []
   };
+
   students.push(newStudent);
-  console.log(`✅ Student added: ${username} (ID: ${newId})`);
+  persistStudents();
   return newStudent;
-}
-
-// 🔹 Lookup Helpers
-function findStudentById(id) {
-  return students.find(s => s.id.toLowerCase() === id.toLowerCase());
-}
-
-function findStudentByName(name) {
-  return students.filter(s =>
-    s.name.toLowerCase().includes(name.toLowerCase())
-  );
-}
-
-function findUserByUsername(username) {
-  return students.find(s => s.username === username);
-}
-
-// 🔹 Prerequisite override simulation
-function overridePrerequisite(studentId, courseCode) {
-  const student = findStudentById(studentId);
-  if (!student) {
-    console.log("❌ Student not found");
-    return "Student not found";
-  }
-
-  // Remove from blockedCourses if present
-  const blockedIndex = student.blockedCourses.indexOf(courseCode);
-  if (blockedIndex !== -1) {
-    student.blockedCourses.splice(blockedIndex, 1);
-  }
-
-  // Add to enrolledCourses
-  if (!student.enrolledCourses.includes(courseCode)) {
-    student.enrolledCourses.push(courseCode);
-  }
-
-  console.log(`✅ ${student.name} successfully enrolled in ${courseCode}.`);
-  return `${student.name} successfully enrolled in ${courseCode}.`;
 }

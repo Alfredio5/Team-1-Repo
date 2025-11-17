@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VCU Course Registration - Admin Enrollment Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <!-- ✅ Unified Header -->
+  <header>
+    <h1>VCU Course Registration System</h1>
+    <div class="header-right">
+      <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
+      <button id="loginBtn" onclick="handleLoginLogout()">Log In</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- ✅ Navigation Menu -->
+    <nav>
+      <ul>
+        <li><a href="homescreen.html">Home</a></li>
+        <li><a href="course-search.html">Course Search</a></li>
+        <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
+        <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
+        <li><a href="advisor-portal.html">Advisor Portal</a></li>
+        <li><a href="instructor-messages.html">Instructor Messaging</a></li>
+        <li><a href="student-inbox.html">Student Inbox</a></li>
+        <li><a href="admin-enrollment.html" class="active">Admin Dashboard</a></li>
+        <li><a href="student-schedule.html">Student Schedule</a></li>
+      </ul>
+    </nav>
+
+    <!-- ✅ Main Content -->
+    <main>
+      <h2>Admin Enrollment Dashboard</h2>
+      <p>Welcome to the administrative enrollment dashboard. From here, you can view, manage, and monitor course enrollment capacities across all departments.</p>
+
+      <!-- ✅ Enrollment Overview Section -->
+      <section style="margin-top: 25px;">
+        <h3>Course Enrollment Overview</h3>
+        <table id="adminEnrollmentTable">
+          <thead>
+            <tr>
+              <th>Course #</th>
+              <th>Department</th>
+              <th>Enrolled</th>
+              <th>Capacity</th>
+              <th>Seats Left</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- ✅ Update Capacity Section -->
+      <section style="margin-top: 30px;">
+        <h3>Adjust Course Capacity</h3>
+        <form onsubmit="event.preventDefault(); updateCapacity();">
+          <label for="courseCode">Course #:</label>
+          <input type="text" id="courseCode" placeholder="e.g., CS101" required />
+
+          <label for="newCapacity">New Capacity:</label>
+          <input type="number" id="newCapacity" min="1" required />
+
+          <button type="submit">Update Capacity</button>
+        </form>
+        <p id="capacityStatus" style="margin-top:10px; font-weight:bold;"></p>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <p>© 2025 VCU Course Registration System</p>
+  </footer>
+
+  <!-- ✅ Global Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h3>Login</h3>
+      <input type="text" id="loginUsername" placeholder="Enter Username" />
+      <input type="password" id="loginPassword" placeholder="Enter Password" />
+      <button onclick="login()">Log In</button>
+      <button class="secondary-btn" onclick="closeLoginModal()">Cancel</button>
+      <div id="loginMessage" class="modal-message"></div>
+    </div>
+  </div>
+
+  <!-- ✅ Scripts -->
+  <script src="students.js"></script>
+  <script src="courses.js"></script>
+  <script src="auth.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      updateLoginDisplay();
+      populateAdminTable();
+    });
+
+    // ✅ Display all course enrollments
+    function populateAdminTable() {
+      const tbody = document.querySelector("#adminEnrollmentTable tbody");
+      tbody.innerHTML = "";
+
+      courses.forEach(course => {
+        const seatsLeft = course.max - course.enrolled;
+        const status = seatsLeft > 0 ? "Open" : "Full";
+
+        const row = `
+          <tr>
+            <td>${course.number}</td>
+            <td>${course.department}</td>
+            <td>${course.enrolled}</td>
+            <td>${course.max}</td>
+            <td>${seatsLeft}</td>
+            <td style="color:${status === "Full" ? "red" : "green"}; font-weight:bold;">${status}</td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+    }
+
+    // ✅ Update course capacity
+    function updateCapacity() {
+      const code = document.getElementById("courseCode").value.trim().toUpperCase();
+      const newCap = parseInt(document.getElementById("newCapacity").value);
+      const status = document.getElementById("capacityStatus");
+
+      const course = courses.find(c => c.number.toUpperCase() === code);
+
+      if (!course) {
+        status.style.color = "red";
+        status.textContent = "Error: Course not found.";
+        return;
+      }
+
+      if (newCap < course.enrolled) {
+        status.style.color = "red";
+        status.textContent = "Error: New capacity cannot be less than current enrollment.";
+        return;
+      }
+
+      course.max = newCap;
+      status.style.color = "green";
+      status.textContent = `Successfully updated capacity for ${course.number} to ${newCap}.`;
+      populateAdminTable();
+    }
+  </script>
+</body>
+</html>

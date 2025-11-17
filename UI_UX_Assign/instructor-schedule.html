@@ -1,133 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VCU Course Registration - Instructor Schedule</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instructor Schedule - VCU Registration</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-  <!-- ✅ Unified Header -->
-  <header>
-    <h1>VCU Course Registration System</h1>
-    <div class="header-right">
-      <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
-      <button id="loginBtn" onclick="handleLoginLogout()">Log In</button>
-    </div>
-  </header>
-
-  <div class="container">
-    <!-- ✅ Navigation -->
-    <nav>
-      <ul>
-        <li><a href="homescreen.html">Home</a></li>
-        <li><a href="course-search.html">Course Search</a></li>
-        <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
-        <li><a href="instructor-schedule.html" class="active">Instructor Schedule</a></li>
-        <li><a href="session-enrollment.html">Session Enrollment</a></li>
-        <li><a href="advisor-portal.html">Advisor Portal</a></li>
-      </ul>
-    </nav>
-
-    <!-- ✅ Main Content -->
-    <main>
-      <h2 id="pageTitle">Instructor Schedule</h2>
-
-      <!-- 🔒 Access Restricted Message -->
-      <div id="accessDenied" style="display:none; color:red; font-weight:bold; text-align:center;">
-        🚫 Access Denied: You must be logged in as an instructor to view this page.
-      </div>
-
-      <!-- ✅ Only visible if instructor -->
-      <div id="scheduleSection" style="display:none;">
-        <h3>Your Assigned Courses:</h3>
-        <table id="scheduleTable">
-          <thead>
-            <tr>
-              <th>Course #</th>
-              <th>Department</th>
-              <th>Credits</th>
-              <th>Modality</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </main>
+<!-- Header -->
+<header>
+  <h1>VCU Course Registration System</h1>
+  <div class="header-right">
+    <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
+    <button id="loginBtn" onclick="handleLoginLogout()">Log Out</button>
   </div>
+</header>
 
-  <footer>
-    <p>&copy; 2025 Course Registration System</p>
-  </footer>
+<div class="container">
+  <nav>
+    <ul>
+      <li><a href="homescreen.html">Home</a></li>
+      <li><a href="course-search.html">Course Search</a></li>
+      <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
+      <li><a href="instructor-schedule.html" class="active">Instructor Schedule</a></li>
+      <li><a href="advisor-portal.html">Advisor Portal</a></li>
+      <li><a href="instructor-messages.html">Instructor Messaging</a></li>
+      <li><a href="student-inbox.html">Student Inbox</a></li>
+      <li><a href="admin-enrollment.html">Admin Dashboard</a></li>
+      <li><a href="student-schedule.html">Student Schedule</a></li>
+    </ul>
+  </nav>
 
-  <!-- ✅ Global Login Modal (from auth.js) -->
-  <div id="loginModal" class="modal">
-    <div class="modal-content">
-      <h3>Login</h3>
-      <input type="text" id="loginUsername" placeholder="Enter Username" />
-      <input type="password" id="loginPassword" placeholder="Enter Password" />
-      <button onclick="login()">Log In</button>
-      <button class="secondary-btn" onclick="closeLoginModal()">Cancel</button>
-      <div id="loginMessage" class="modal-message"></div>
-    </div>
-  </div>
+<main>
+  <h2>Instructor Schedule</h2>
 
-  <!-- ✅ JavaScript Files -->
-  <script src="students.js"></script>
-  <script src="courses.js"></script>
-  <script src="auth.js"></script>
+  <div id="instructorCoursesContainer"></div>
+</main>
 
-  <script>
-    // Run authentication and access control
-    document.addEventListener("DOMContentLoaded", () => {
-      updateLoginDisplay();
-      enforceInstructorAccess();
+</div>
+
+<footer>
+  <p>&copy; 2025 Course Registration System</p>
+</footer>
+
+<script src="students.js"></script>
+<script src="courses.js"></script>
+<script src="auth.js"></script>
+
+<script>
+// =======================
+// RENDER INSTRUCTOR COURSES
+// =======================
+document.addEventListener("DOMContentLoaded", () => {
+  updateLoginDisplay();
+  renderInstructorCourses();
+});
+
+function renderInstructorCourses() {
+  const user = JSON.parse(localStorage.getItem("loggedInUser"));
+  const tableBody = document.querySelector("#instructorCoursesTable tbody");
+  tableBody.innerHTML = "";
+
+  if (!user || user.role !== "instructor") {
+    tableBody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">
+      Access Denied — Must be logged in as an instructor.
+    </td></tr>`;
+    return;
+  }
+
+  const instructorCourses = courses.filter(c => c.instructor === user.name);
+
+  instructorCourses.forEach(course => {
+    tableBody.innerHTML += `
+      <tr>
+        <td>${course.number}</td>
+        <td>${course.department}</td>
+        <td>${course.credits}</td>
+        <td>${course.modality}</td>
+        <td><button onclick="viewRoster('${course.number}')">View Roster</button></td>
+      </tr>
+    `;
+  });
+}
+
+
+
+// =======================
+// ROSTER VIEW FUNCTION
+// =======================
+function viewRoster(courseNum) {
+  const rosterPanel = document.getElementById("rosterPanel");
+  const rosterTitle = document.getElementById("rosterTitle");
+  const rosterBody = document.getElementById("rosterBody");
+
+  rosterTitle.textContent = `Student Roster for ${courseNum}`;
+  rosterBody.innerHTML = "";
+
+  // Find students enrolled in this course
+  const enrolledStudents = students.filter(s =>
+    s.enrolledCourses && s.enrolledCourses.includes(courseNum)
+  );
+
+  if (enrolledStudents.length === 0) {
+    rosterBody.innerHTML = `<tr><td colspan="2" style="text-align:center;">No students enrolled.</td></tr>`;
+  } else {
+    enrolledStudents.forEach(stu => {
+      rosterBody.innerHTML += `
+        <tr>
+          <td>${stu.name}</td>
+          <td>${stu.username}</td>
+        </tr>
+      `;
     });
+  }
 
-    // ✅ Enforce instructor-only access
-    function enforceInstructorAccess() {
-      const user = JSON.parse(localStorage.getItem("loggedInUser")); // full user object
+  rosterPanel.style.display = "block";
+}
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
 
-      const denied = document.getElementById("accessDenied");
-      const scheduleSection = document.getElementById("scheduleSection");
-
-      if (!user || user.role !== "instructor") {
-        denied.style.display = "block";
-        scheduleSection.style.display = "none";
+    if (!user || user.role !== "instructor") {
+        document.querySelector("main").innerHTML = `
+            <h2>Instructor Schedule</h2>
+            <p style="color:red; font-weight:bold; margin-top:20px;">
+                ⛔ Access Denied: You must be logged in as an instructor to view this page.
+            </p>`;
         return;
-      }
-
-      // ✅ Instructor has access
-      denied.style.display = "none";
-      scheduleSection.style.display = "block";
-      loadInstructorSchedule(user.name);
     }
 
-    // ✅ Load courses assigned to instructor
-    function loadInstructorSchedule(instructorName) {
-      const tbody = document.getElementById("scheduleTable").querySelector("tbody");
-      tbody.innerHTML = "";
+    renderInstructorCourses(user.name);
+});
 
-      const results = courses.filter(c => c.instructor.toLowerCase() === instructorName.toLowerCase());
+function renderInstructorCourses(instructorName) {
+    const container = document.getElementById("instructorCoursesContainer");
+    container.innerHTML = `
+        <h3>Your Assigned Courses:</h3>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Course #</th>
+                    <th>Department</th>
+                    <th>Credits</th>
+                    <th>Modality</th>
+                    <th>Enrollment</th>
+                    <th>Roster</th>
+                    <th>Edit Max Seats</th>
+                </tr>
+            </thead>
+            <tbody id="instructorCourseRows"></tbody>
+        </table>
+    `;
 
-      if (results.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; font-weight:bold;">No courses assigned.</td></tr>`;
-        return;
-      }
+    const tbody = document.getElementById("instructorCourseRows");
 
-      results.forEach(c => {
+    const instructorCourses = courses.filter(c => c.instructor === instructorName);
+
+    instructorCourses.forEach(c => {
+        const seatsLeft = c.max - c.enrolled;
+
         tbody.innerHTML += `
-          <tr>
-            <td>${c.number}</td>
-            <td>${c.department}</td>
-            <td>${c.credits}</td>
-            <td>${c.modality}</td>
-          </tr>`;
-      });
+            <tr>
+                <td>${c.number}</td>
+                <td>${c.department}</td>
+                <td>${c.credits}</td>
+                <td>${c.modality}</td>
+                <td>${c.enrolled} / ${c.max}</td>
+
+                <td>
+                    <button onclick="viewRoster('${c.number}')">View Roster</button>
+                </td>
+
+                <td>
+                    <input type="number" id="max_${c.number}" value="${c.max}" 
+                        style="width:80px; padding:5px; text-align:center;">
+                    <button onclick="updateMaxSeats('${c.number}')">Save</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+
+// ==========================
+// VIEW ROSTER
+// ==========================
+function viewRoster(courseNum) {
+    const roster = students.filter(s => s.enrolledCourses.includes(courseNum));
+
+    let list = roster.length === 0
+        ? "<p>No enrolled students.</p>"
+        : roster.map(s => `<li>${s.name}</li>`).join("");
+
+    alert(`Roster for ${courseNum}:\n\n` + roster.map(s => s.name).join("\n"));
+}
+
+
+// ==========================
+// UPDATE MAX SEATS
+// ==========================
+function updateMaxSeats(courseNum) {
+    const input = document.getElementById("max_" + courseNum);
+    const newMax = parseInt(input.value);
+
+    const course = courses.find(c => c.number === courseNum);
+
+    if (!course) return;
+
+    if (newMax < course.enrolled) {
+        alert(`❌ Cannot set max seats to ${newMax}. There are already ${course.enrolled} students enrolled.`);
+        input.value = course.max;
+        return;
     }
-  </script>
+
+    course.max = newMax;
+    persistCourses();
+
+    alert(`✅ Updated max seats for ${courseNum} to ${newMax}.`);
+    renderInstructorCourses(course.instructor);
+}
+</script>
+
 
 </body>
 </html>
