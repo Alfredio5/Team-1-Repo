@@ -80,6 +80,16 @@
     <p>&copy; 2025 VCU Course Registration System</p>
   </footer>
 
+  <!-- ✅ Global Login Modal (from auth.js) -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h3>Student Login</h3>
+      <input type="text" id="loginUsername" placeholder="Enter Username" />
+      <input type="password" id="loginPassword" placeholder="Enter Password" />
+      <button class="primary-btn" onclick="login()">Log In</button>
+      <button class="secondary-btn" onclick="closeLoginModal()">Cancel</button>
+      <div id="loginMessage" class="modal-message"></div>
+    </div>
   <!-- ✅ Scripts -->
   <script src="students.js"></script>
   <script src="courses.js"></script>
