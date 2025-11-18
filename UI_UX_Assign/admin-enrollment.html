@@ -102,52 +102,78 @@
 
     // ✅ Display all course enrollments
     function populateAdminTable() {
-      const tbody = document.querySelector("#adminEnrollmentTable tbody");
-      tbody.innerHTML = "";
+  const tbody = document.querySelector("#adminEnrollmentTable tbody");
+  tbody.innerHTML = "";
 
-      courses.forEach(course => {
-        const seatsLeft = course.max - course.enrolled;
-        const status = seatsLeft > 0 ? "Open" : "Full";
+  courses.forEach(course => {
+    const seatsLeft = course.max - course.enrolled;
+    let statusText = "";
+    let statusColor = "";
 
-        const row = `
-          <tr>
-            <td>${course.number}</td>
-            <td>${course.department}</td>
-            <td>${course.enrolled}</td>
-            <td>${course.max}</td>
-            <td>${seatsLeft}</td>
-            <td style="color:${status === "Full" ? "red" : "green"}; font-weight:bold;">${status}</td>
-          </tr>
-        `;
-        tbody.innerHTML += row;
-      });
+    // 🔥 Capacity logic
+    if (seatsLeft === 0) {
+      statusText = "FULL";
+      statusColor = "red";
+    } 
+    else if (seatsLeft <= 5) {
+      statusText = "LIMITED SPOTS";
+      statusColor = "orange";
+    } 
+    else {
+      statusText = "OPEN";
+      statusColor = "green";
     }
+
+    const row = `
+      <tr>
+        <td>${course.number}</td>
+        <td>${course.department}</td>
+        <td>${course.enrolled}</td>
+        <td>${course.max}</td>
+        <td>${seatsLeft}</td>
+        <td style="color:${statusColor}; font-weight:bold;">
+            ${statusText}
+        </td>
+      </tr>
+    `;
+
+    tbody.innerHTML += row;
+  });
+}
+
 
     // ✅ Update course capacity
-    function updateCapacity() {
-      const code = document.getElementById("courseCode").value.trim().toUpperCase();
-      const newCap = parseInt(document.getElementById("newCapacity").value);
-      const status = document.getElementById("capacityStatus");
+  function updateCapacity() {
+  const code = document.getElementById("courseCode").value.trim().toUpperCase();
+  const newCap = parseInt(document.getElementById("newCapacity").value);
+  const status = document.getElementById("capacityStatus");
 
-      const course = courses.find(c => c.number.toUpperCase() === code);
+  const course = courses.find(c => c.number.toUpperCase() === code);
 
-      if (!course) {
-        status.style.color = "red";
-        status.textContent = "Error: Course not found.";
-        return;
-      }
+  if (!course) {
+    status.style.color = "red";
+    status.textContent = "Error: Course not found.";
+    return;
+  }
 
-      if (newCap < course.enrolled) {
-        status.style.color = "red";
-        status.textContent = "Error: New capacity cannot be less than current enrollment.";
-        return;
-      }
+  if (newCap < course.enrolled) {
+    status.style.color = "red";
+    status.textContent = "Error: New capacity cannot be less than current enrollment.";
+    return;
+  }
 
-      course.max = newCap;
-      status.style.color = "green";
-      status.textContent = `Successfully updated capacity for ${course.number} to ${newCap}.`;
-      populateAdminTable();
-    }
+  // 🔥 APPLY UPDATE
+  course.max = newCap;
+
+  // 🔥 SAVE TO LOCAL STORAGE (this was missing!)
+  persistCourses();
+
+  status.style.color = "green";
+  status.textContent = `Successfully updated capacity for ${course.number} to ${newCap}.`;
+
+  populateAdminTable();
+}
+
   </script>
 </body>
 </html>

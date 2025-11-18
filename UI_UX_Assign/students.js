@@ -1,9 +1,24 @@
+/****************************************************
+ *  STUDENT DATA VERSIONING
+ ****************************************************/
+
+
+const STUDENTS_VERSION = "v3";   // bump when student data changes
+
+// If version mismatch → reset stored student data
+if (localStorage.getItem("studentsVersion") !== STUDENTS_VERSION) {
+  console.warn("⚠️ Student data changed — resetting saved student data.");
+  localStorage.removeItem("studentsData");
+  localStorage.setItem("studentsVersion", STUDENTS_VERSION);
+}
+
 // =============================================
 // students.js  (FINAL VERSION WITH PERSISTENCE)
 // =============================================
 
 // Load students from localStorage OR fallback to defaults
 let students = JSON.parse(localStorage.getItem("studentsData")) || [
+
   {
     id: "001",
     name: "Jill Valentine",
@@ -11,7 +26,7 @@ let students = JSON.parse(localStorage.getItem("studentsData")) || [
     password: "pass123",
     role: "student",
     enrolledCourses: [],
-    blockedCourses: ["BIO201"]
+    blockedCourses: ["BIOH250"]
   },
   {
     id: "002",
@@ -94,6 +109,45 @@ function persistStudents() {
   localStorage.setItem("studentsData", JSON.stringify(students));
 }
 
+/****************************************************
+ *  ADVISOR OVERRIDE SYSTEM
+ ****************************************************/
+
+function overridePrerequisite(studentId, courseNumber) {
+  const student = students.find(s => s.id === studentId);
+  const course = courses.find(c => c.number === courseNumber);
+
+  if (!student) return "Error: Student not found.";
+  if (!course) return "Error: Course not found.";
+
+  // If student already enrolled, skip
+  if (student.enrolledCourses.includes(courseNumber)) {
+    return `${student.name} is already enrolled in ${courseNumber}.`;
+  }
+
+  // If course is full — override still allowed?
+  // Your instructions say advisors SHOULD override capacity.
+  // If you want to block at capacity, tell me.
+  if (course.enrolled >= course.max) {
+    // course.max++ would "expand" class capacity automatically
+    course.max++; 
+  }
+
+  // Remove from blocked courses
+  student.blockedCourses = student.blockedCourses.filter(c => c !== courseNumber);
+
+  // Add to enrolled
+  student.enrolledCourses.push(courseNumber);
+  course.enrolled++;
+
+  // Save updated structures
+  persistStudents();
+  persistCourses();
+
+  return `Override completed. ${student.name} is now enrolled in ${courseNumber}.`;
+}
+
+
 // =============================================
 // Helper Functions
 // =============================================
@@ -117,3 +171,30 @@ function addStudent(username, password) {
   persistStudents();
   return newStudent;
 }
+
+/****************************************************
+ *  OVERRIDE PREREQUISITE & FORCE ENROLL
+ ****************************************************/
+function overridePrerequisite(studentId, courseNum) {
+  const student = students.find(s => s.id === studentId);
+  const course = courses.find(c => c.number === courseNum);
+
+  if (!student) return "Student not found.";
+  if (!course) return "Course not found.";
+
+  // 1. Remove from blockedCourses
+  student.blockedCourses = student.blockedCourses.filter(c => c !== courseNum);
+
+  // 2. Prevent duplicate enrollment
+  if (!student.enrolledCourses.includes(courseNum)) {
+    student.enrolledCourses.push(courseNum);
+    course.enrolled++;
+  }
+
+  // 3. Persist changes
+  persistStudents();
+  persistCourses();
+
+  return `Override applied — ${student.name} enrolled in ${courseNum}.`;
+}
+

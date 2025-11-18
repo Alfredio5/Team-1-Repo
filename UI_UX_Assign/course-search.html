@@ -99,18 +99,25 @@
     });
 
     function searchCourses() {
-      const dept = document.getElementById("department").value.toLowerCase();
-      const instr = document.getElementById("instructor").value.toLowerCase();
-      const num = document.getElementById("courseNumber").value.toLowerCase();
+  const dept = document.getElementById("department").value.trim().toLowerCase();
+  const instr = document.getElementById("instructor").value.trim().toLowerCase();
+  const num = document.getElementById("courseNumber").value.trim().toLowerCase();
 
-      const filtered = courses.filter(c =>
-          (!dept || c.department.toLowerCase().includes(dept)) &&
-          (!instr || c.instructor.toLowerCase().includes(instr)) &&
-          (!num || c.number.toLowerCase().includes(num))
-      );
+  // ❌ If all fields empty → show error
+  if (!dept && !instr && !num) {
+    alert("Error: Must define search criteria");
+    return;
+  }
 
-      displayCourses(filtered);
-    }
+  const filtered = courses.filter(c =>
+    (!dept || c.department.toLowerCase().includes(dept)) &&
+    (!instr || c.instructor.toLowerCase().includes(instr)) &&
+    (!num || c.number.toLowerCase().includes(num))
+  );
+
+  displayCourses(filtered);
+}
+
 
     function clearFilters() {
       document.getElementById("department").value = "";

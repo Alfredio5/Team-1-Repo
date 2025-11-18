@@ -61,7 +61,7 @@ function renderStudentSchedule() {
     .map(code => courses.find(c => c.number === code))
     .filter(Boolean);
 
-  // Assign a consistent color per course
+  // Assign consistent block colors
   const colorClasses = ["block-1", "block-2", "block-3", "block-4", "block-5"];
   const colorMap = {};
   let idx = 0;
@@ -73,7 +73,7 @@ function renderStudentSchedule() {
     }
   });
 
-  // Place each course on the grid
+  // Place each course block
   studentCourses.forEach(course => {
     course.meetingDays.forEach(day => {
       placeCourseBlock(day, course, colorMap[course.number]);
@@ -93,7 +93,13 @@ function placeCourseBlock(day, course, colorClass) {
   if (!cell) return;
 
   const block = document.createElement("div");
-  block.classList.add("class-block");      // important for cursor + styling
+  block.classList.add("class-block");
+
+  // IMPORTANT: ensure clickability
+  block.style.position = "absolute";
+  block.style.cursor = "pointer";
+  block.style.zIndex = "10";  // <– FIX: ensures block is above grid
+
   if (colorClass) block.classList.add(colorClass);
 
   block.textContent = course.number;
@@ -104,7 +110,7 @@ function placeCourseBlock(day, course, colorClass) {
   block.style.top = `${offsetWithinHour}px`;
   block.style.height = `${height}px`;
 
-  // Click -> show details modal (defined in courses.js)
+  // Click -> show details modal
   block.addEventListener("click", () => {
     if (typeof showCourseDetails === "function") {
       showCourseDetails(course.number);

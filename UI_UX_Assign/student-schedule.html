@@ -58,16 +58,17 @@
 </footer>
 
 <!-- ✅ Global Login Modal (from auth.js) -->
-  <div id="loginModal" class="modal">
-    <div class="modal-content">
-      <h3>Student Login</h3>
-      <input type="text" id="loginUsername" placeholder="Enter Username" />
-      <input type="password" id="loginPassword" placeholder="Enter Password" />
-      <button class="primary-btn" onclick="login()">Log In</button>
-      <button class="secondary-btn" onclick="closeLoginModal()">Cancel</button>
-      <div id="loginMessage" class="modal-message"></div>
-    </div>
-    
+<div id="loginModal" class="modal">
+  <div class="modal-content">
+    <h3>Student Login</h3>
+    <input type="text" id="loginUsername" placeholder="Enter Username" />
+    <input type="password" id="loginPassword" placeholder="Enter Password" />
+    <button class="primary-btn" onclick="login()">Log In</button>
+    <button class="secondary-btn" onclick="closeLoginModal()">Cancel</button>
+    <div id="loginMessage" class="modal-message"></div>
+  </div>
+</div>   <!-- ✅ THIS WAS MISSING -->
+
 <!-- ===============================
      COURSE DETAIL MODAL (ONLY ONE!)
 ================================-->
@@ -75,9 +76,10 @@
   <div class="modal-content">
     <h3 id="modalCourseTitle"></h3>
     <p id="modalCourseInfo"></p>
-    <button onclick="closeModal()" class="secondary-btn">Close</button>
+    <button onclick="closeModal()">Close</button>
   </div>
 </div>
+
 
 <!-- Scripts -->
 <script src="students.js"></script>

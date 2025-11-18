@@ -1,22 +1,11 @@
 /****************************************************
- *  COURSES.JS — FINAL CLEAN VERSION
+ *  COURSES.JS — AUTO-SYNC FINAL VERSION
  ****************************************************/
 
 /* ==================================================
-   DATA VERSIONING (Auto-reset when structure changes)
+   DEFAULT COURSE LIST (SOURCE OF TRUTH)
 ================================================== */
-const COURSES_VERSION = "v3";
-
-if (localStorage.getItem("coursesVersion") !== COURSES_VERSION) {
-  console.warn("⚠️ Course data changed — resetting saved course data.");
-  localStorage.removeItem("coursesData");
-  localStorage.setItem("coursesVersion", COURSES_VERSION);
-}
-
-/* ==================================================
-   COURSE DATA (Default if storage empty)
-================================================== */
-let courses = JSON.parse(localStorage.getItem("coursesData")) || [
+const defaultCourses = [
   { number: "INFO450", department: "INFO", instructor: "Dr. McGarry",
     credits: 3, prereq: "INFO300", modality: "Hybrid",
     max: 30, enrolled: 10,
@@ -32,7 +21,6 @@ let courses = JSON.parse(localStorage.getItem("coursesData")) || [
     max: 30, enrolled: 10,
     meetingDays: ["Mon","Wed"], startTime: 13.00, endTime: 14.25 },
 
-  // Extra instructors & courses...
   { number: "SCMA320", department: "SCMA", instructor: "Dr. Johnson",
     credits: 3, prereq: "MATH200", modality: "In-person",
     max: 40, enrolled: 25,
@@ -50,7 +38,7 @@ let courses = JSON.parse(localStorage.getItem("coursesData")) || [
 
   { number: "MATH200", department: "MATH", instructor: "Dr. Lee",
     credits: 4, prereq: "None", modality: "Hybrid",
-    max: 35, enrolled: 20,
+    max: 35, enrolled: 35,
     meetingDays: ["Tue","Thu"], startTime: 9.30, endTime: 10.75 },
 
   { number: "HIST300", department: "HIST", instructor: "Dr. Astarion",
@@ -100,6 +88,25 @@ let courses = JSON.parse(localStorage.getItem("coursesData")) || [
 ];
 
 /* ==================================================
+   AUTO-SYNC LOGIC (NO VERSION BUMPS EVER AGAIN)
+================================================== */
+function coursesChanged(stored, defaults) {
+  return JSON.stringify(stored) !== JSON.stringify(defaults);
+}
+
+let storedCourses = JSON.parse(localStorage.getItem("coursesData")) || null;
+
+// Auto-reload if missing OR changed
+if (!storedCourses || coursesChanged(storedCourses, defaultCourses)) {
+  console.warn("⚠️ Course data updated from file — syncing localStorage.");
+  localStorage.setItem("coursesData", JSON.stringify(defaultCourses));
+  storedCourses = defaultCourses;
+}
+
+// GLOBAL courses array used everywhere
+let courses = storedCourses;
+
+/* ==================================================
    SAVE COURSES
 ================================================== */
 function persistCourses() {
@@ -121,11 +128,11 @@ function formatTime(t) {
 }
 
 /* ==================================================
-   DISPLAY COURSES (Course Search Page)
+   DISPLAY COURSES (COURSE SEARCH TABLE)
 ================================================== */
 function displayCourses(courseList) {
   const table = document.querySelector("#resultsTable tbody");
-  if (!table) return; // Avoid error on pages without table
+  if (!table) return;
 
   table.innerHTML = "";
 
@@ -139,7 +146,7 @@ function displayCourses(courseList) {
     if (user?.role === "student") {
       const st = students.find(s => s.username === user.username);
       if (st?.enrolledCourses.includes(course.number)) {
-        button = `<button onclick="unenroll('${course.number}')" class="unenroll-btn">Unenroll</button>`;
+        button = `<button class="unenroll-btn" onclick="unenroll('${course.number}')">Unenroll</button>`;
       }
     }
 
@@ -151,7 +158,7 @@ function displayCourses(courseList) {
         <td>${course.credits}</td>
         <td>${course.prereq}</td>
         <td>${course.meetingDays.join(", ")}</td>
-        <td>${formatTime(course.startTime)} - ${formatTime(course.endTime)}</td>
+        <td>${formatTime(course.startTime)} – ${formatTime(course.endTime)}</td>
         <td>${course.modality}</td>
         <td>${course.enrolled} / ${course.max} (${seatsLeft} left)</td>
         <td>${button}</td>
@@ -178,7 +185,6 @@ function hasTimeConflict(course, student) {
 
     if (overlap) return existing.number;
   }
-
   return null;
 }
 
@@ -214,7 +220,6 @@ function enroll(courseNum) {
   if (typeof renderStudentSchedule === "function") {
     renderStudentSchedule();
   }
-
 }
 
 /* ==================================================
@@ -241,11 +246,10 @@ function unenroll(courseNum) {
   if (typeof renderStudentSchedule === "function") {
     renderStudentSchedule();
   }
-
 }
 
 /* ==================================================
-   COURSE MODAL (Used on Student Schedule Page)
+   COURSE DETAILS MODAL (STUDENT SCHEDULE)
 ================================================== */
 function showCourseDetails(courseNum) {
   const course = courses.find(c => c.number === courseNum);
@@ -256,7 +260,7 @@ function showCourseDetails(courseNum) {
   const info = document.getElementById("modalCourseInfo");
 
   if (!modal || !title || !info) {
-    console.warn("Course modal not present on this page.");
+    console.warn("Modal not found on this page.");
     return;
   }
 
@@ -281,8 +285,8 @@ function closeModal() {
 }
 
 /* ==================================================
-   PAGE INITIALIZATION
+   PAGE INIT
 ================================================== */
 document.addEventListener("DOMContentLoaded", () => {
-  displayCourses(courses);  // Only fills table if the page has one
+  displayCourses(courses);
 });
