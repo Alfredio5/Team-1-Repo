@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCU Course Registration - Admin Reports</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        main h2 {
+            margin-bottom: 20px;
+        }
+
+        #reportTable th,
+        #reportTable td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        #reportTable th {
+            background: #f7f7f7;
+        }
+
+        form#reportFilters label {
+            font-weight: 600;
+            margin-right: 6px;
+        }
+
+        .helper {
+            font-size: 0.92rem;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>VCU Course Registration System</h1>
+        <div class="header-right">
+            <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
+            <button id="loginBtn" onclick="handleLoginLogout()">Log In</button>
+        </div>
+    </header>
+    <div class="container">
+       <nav>
+      <ul>
+        <li><a href="homescreen.html">Home</a></li>
+        <li><a href="course-search.html">Course Search</a></li>
+        <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
+        <li><a href="session-enrollment.html">Profesor Information</a></li>
+        <li><a href="admin-reports.html" class="active">Admin Reports</a></li>
+        <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
+        <li><a href="advisor-portal.html">Advisor Portal</a></li>
+        <li><a href="instructor-messages.html">Instructor Messaging</a></li>
+        <li><a href="student-inbox.html">Student Inbox</a></li>
+        <li><a href="admin-enrollment.html" >Admin Dashboard</a></li>
+        <li><a href="student-schedule.html">Student Schedule</a></li>
+      </ul>
+    </nav>
+
+        <main>
+            <h2>Enrollment Reports (Admin)</h2>
+            <p class="helper">Filter by department and term, generate on demand, then export to CSV or PDF.</p>
+            <div id="reportsDenied" style="display:none; color:red; font-weight:bold; margin:12px 0;">
+                Access Denied: Admins only.
+            </div>
+            <section id="reportsSection" style="display:none; margin-top:8px;">
+                <form id="reportFilters" onsubmit="event.preventDefault(); generateReport();">
+                    <label for="repDept">Department:</label>
+                    <select id="repDept" style="min-width:160px;">
+                        <option value="ALL">All Departments</option>
+                    </select>
+                    <label for="repTerm" style="margin-left:12px;">Term:</label>
+                    <select id="repTerm" style="min-width:160px;">
+                        <option value="ALL">All Terms</option>
+                        <option value="N/A">N/A</option>
+                    </select>
+                    <button type="submit" style="margin-left:12px;">Generate</button>
+                </form>
+                <p id="reportMsg" style="margin-top:8px; font-weight:bold;"></p>
+
+                <div style="margin-top:12px;">
+                    <button type="button" onclick="exportReportCSV()">Export CSV</button>
+                    <button type="button" onclick="exportReportPDF()" style="margin-left:8px;">Export PDF</button>
+                </div>
+
+                <table id="reportTable" style="margin-top:14px; width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">Course #</th>
+                            <th style="text-align:left;">Dept</th>
+                            <th style="text-align:left;">Instructor</th>
+                            <th style="text-align:left;">Enrolled</th>
+                            <th style="text-align:left;">Max</th>
+                            <th style="text-align:left;">Spots Left</th>
+                            <th style="text-align:left;">Term</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Course Registration System</p>
+    </footer>
+
+    <script src="students.js"></script>
+    <script src="courses.js"></script>
+    <script src="auth.js"></script>
+
+    <script>
+        const ACCESS_ROLES = ['admin', 'instructor'];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof updateLoginDisplay === "function") updateLoginDisplay();
+
+            const user = JSON.parse(localStorage.getItem("loggedInUser"));
+            const allowed = user && ACCESS_ROLES.includes(user.role);
+
+            const section = document.getElementById("reportsSection");
+            const denied = document.getElementById("reportsDenied");
+
+            if (!allowed) {
+                section.style.display = "none";
+                denied.style.display = "block";
+                return;
+            }
+
+            denied.style.display = "none";
+            section.style.display = "block";
+
+            buildDeptOptions();
+            buildTermOptions();
+            generateReport();
+        });
+
+        function buildDeptOptions() {
+            const sel = document.getElementById("repDept");
+            if (!sel) return;
+            const data = Array.isArray(window.courses) ? window.courses : [];
+            const depts = Array.from(new Set(data.map(c => c.department))).sort();
+            for (const d of depts) {
+                const opt = document.createElement("option");
+                opt.value = d; opt.textContent = d;
+                sel.appendChild(opt);
+            }
+        }
+
+        function buildTermOptions() {
+            const sel = document.getElementById("repTerm");
+            if (!sel) return;
+            const data = Array.isArray(window.courses) ? window.courses : [];
+            const terms = Array.from(new Set(data.map(c => c.term ? String(c.term) : 'N/A'))).sort();
+            for (const t of terms) {
+                if (t === 'N/A') continue;
+                const opt = document.createElement("option");
+                opt.value = t; opt.textContent = t;
+                sel.appendChild(opt);
+            }
+        }
+
+        function generateReport() {
+            const dept = (document.getElementById("repDept")?.value || "ALL");
+            const term = (document.getElementById("repTerm")?.value || "ALL");
+            const tbody = document.querySelector("#reportTable tbody");
+            const msg = document.getElementById("reportMsg");
+            if (!tbody) return;
+
+            const data = Array.isArray(window.courses) ? window.courses : [];
+            const rows = data.filter(c =>
+                (dept === "ALL" || String(c.department) === dept) &&
+                (term === "ALL" || String(c.term || "N/A") === term)
+            );
+
+            tbody.innerHTML = "";
+            if (rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="padding:8px;">No results for the selected filters.</td></tr>';
+                if (msg) { msg.style.color = "black"; msg.textContent = '0 rows.'; }
+                return;
+            }
+
+            for (const c of rows) {
+                const enrolled = Number(c.enrolled) || 0;
+                const max = Number(c.max) || 0;
+                const spots = Math.max(0, max - enrolled);
+                const cTerm = c.term ? String(c.term) : 'N/A';
+                const tr = document.createElement("tr");
+                tr.innerHTML =
+                    `<td>${c.number}</td><td>${c.department}</td><td>${c.instructor}</td>` +
+                    `<td>${enrolled}</td><td>${max}</td><td>${spots}</td><td>${cTerm}</td>`;
+                tbody.appendChild(tr);
+            }
+
+            if (msg) { msg.style.color = "black"; msg.textContent = `${rows.length} row(s) generated.`; }
+        }
+
+        function exportReportCSV() {
+            const table = document.getElementById("reportTable");
+            const msg = document.getElementById("reportMsg");
+            if (!table) return;
+
+            const rows = Array.from(table.querySelectorAll("tr")).map(tr =>
+                Array.from(tr.querySelectorAll("th,td"))
+                    .map(td => `"${td.textContent.replace(/"/g, '""')}"`)
+                    .join(",")
+            ).join("\n");
+
+            const blob = new Blob([rows], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `enrollment_report_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+
+            if (msg) { msg.style.color = "green"; msg.textContent = "✅ CSV exported."; }
+            alert("CSV exported.");
+        }
+    </script>
+
+    <script>
+        function exportReportPDF() {
+            const table = document.getElementById("reportTable");
+            const msg = document.getElementById("reportMsg");
+            if (!table) return;
+
+
+            const w = window.open("", "_blank", "width=900,height=700");
+            const doc = w.document;
+
+
+            doc.open();
+            doc.write('<!doctype html><html><head><title>Enrollment Report</title>');
+            doc.write('<style>');
+            doc.write('body { font-family: Arial, sans-serif; padding: 16px; }');
+            doc.write('h2 { margin-top: 0; }');
+            doc.write('table { width: 100%; border-collapse: collapse; }');
+            doc.write('th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }');
+            doc.write('th { background: #f5f5f5; }');
+            doc.write('</style></head><body><h2>Enrollment Report</h2>');
+
+
+            doc.write(table.outerHTML);
+
+
+            doc.write('</body></html>');
+
+            doc.close();
+
+            w.focus();
+            w.print();
+
+            if (msg) { msg.style.color = "green"; msg.textContent = "✅ PDF export started (use Save as PDF)."; }
+            alert('PDF export started. In the print dialog, choose "Save as PDF".');
+        }
+    </script>
+</body>
+
+</html>
