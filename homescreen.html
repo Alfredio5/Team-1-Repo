@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VCU Course Registration - Home</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <!-- ✅ Unified Header -->
+  <header>
+    <h1>VCU Course Registration System</h1>
+    <div class="header-right">
+      <div id="userStatus">Logged in as: <span id="loggedInName">Not Logged In</span></div>
+      <button id="loginBtn" onclick="handleLoginLogout()">Log In</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- ✅ Navigation Menu -->
+    <nav>
+      <ul>
+        <li><a href="homescreen.html" class="active">Home</a></li>
+        <li><a href="course-search.html">Course Search</a></li>
+        <li><a href="ui_ux-loginscreen.html">Student Registration</a></li>
+        <li><a href="instructor-schedule.html">Instructor Schedule</a></li>
+        <li><a href="session-enrollment.html">Session Enrollment</a></li>
+        <li><a href="advisor-portal.html">Advisor Portal</a></li>
+      </ul>
+    </nav>
+
+    <!-- ✅ Main Content -->
+    <main>
+      <h2>Welcome</h2>
+      <p>
+        Use the navigation menu to search for courses, register as a student, 
+        view instructor schedules, or manage session enrollments.
+      </p>
+    </main>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Course Registration System</p>
+  </footer>
+
+  <!-- ✅ Global Login Modal (from auth.js) -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h3>Student Login</h3>
+      <input type="text" id="loginUsername" placeholder="Enter Username" />
+      <input type="password" id="loginPassword" placeholder="Enter Password" />
+      <button onclick="login()">Log In</button>
+      <button class="secondary-btn" onclick="closeLoginModal()">Cancel</button>
+      <div id="loginMessage" class="modal-message"></div>
+    </div>
+  </div>
+
+  <!-- ✅ JavaScript -->
+  <script src="students.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    // Initialize global login system
+    document.addEventListener("DOMContentLoaded", () => {
+      initializeAuth();
+    });
+  </script>
+</body>
+</html>
